@@ -1,14 +1,21 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 const API_URL =
-  "https://cat-fact.herokuapp.com/facts/random?animal_type=cat&amount=1";
+  "https://cat-factd.herokuapp.com/facts/random?animal_type=cat&amount=1";
 
 // 11. bikin fungsi createAsyncThunk untuk dapetin data, parameter pertama itu nama type-nya, parameter kedua itu function buat hit api-nya dengan async
-export const fetchRandomFact = createAsyncThunk("fetchRandom", async () => {
-  const response = await fetch(API_URL);
-  const responseJson = await response.json();
-  return responseJson.text;
-});
+export const fetchRandomFact = createAsyncThunk(
+  "fetchRandom",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await fetch(API_URL);
+      const responseJson = await response.json();
+      return responseJson.text;
+    } catch {
+      return rejectWithValue("GAGAL MANING");
+    }
+  },
+);
 
 // 4. bikin initialstate buat slice yang dibutuhin
 const initialState = {
@@ -27,6 +34,10 @@ const catSlice = createSlice({
   extraReducers: (builder) => {
     // 12. tambahin case kalo berhasil fetch, jangan lupa update state dengan paylaod dari action
     builder.addCase(fetchRandomFact.fulfilled, (state, action) => {
+      state.random = action.payload;
+    });
+
+    builder.addCase(fetchRandomFact.rejected, (state, action) => {
       state.random = action.payload;
     });
   },
